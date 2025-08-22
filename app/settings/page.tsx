@@ -28,7 +28,7 @@ export type Prize = {
 
 
 export default function SettingsPage() {
-    const [participants, setParticipants] = useState<{ name: string; companyName?: string; token?: string }[]>([]);
+    const [participants, setParticipants] = useState<{ id: number; name: string; companyName?: string; token?: string }[]>([]);
     const [prizes, setPrizes] = useState<Prize[]>([]);
     const [queue, setQueue] = useState<any[]>([]);
 
@@ -266,6 +266,30 @@ export default function SettingsPage() {
         }
     };
 
+    const resetParticipants = async () => {
+        try {
+            // update semua participant jadi is_deleted = false
+            await Promise.all(
+                participants.map((p) =>
+                    axios.patch(`/api/participants/`, { id: p.id, is_deleted: false })
+                )
+            );
+
+            // update state di frontend juga
+            loadData()
+            // setParticipants(
+            //   participants.map((p) => ({
+            //     ...p,
+            //     is_deleted: false,
+            //   }))
+            // );
+
+            console.log("All participants reset successfully");
+        } catch (error) {
+            console.error("Failed to reset participants:", error);
+        }
+    };
+
     return (
         <Box sx={{ p: 4, width: "100%" }}>
             <Typography variant="h4" gutterBottom>
@@ -338,9 +362,19 @@ export default function SettingsPage() {
 
                 {/* Participants Section */}
                 <Paper sx={{ p: 3, width: "30%" }}>
-                    <Typography variant="h6" gutterBottom>
-                        Participants
-                    </Typography>
+                    <Box aria-label=""
+                        sx={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <Typography variant="h6" gutterBottom>
+                            Participants
+                        </Typography>
+
+                        <Button onClick={resetParticipants} variant="contained">Reset Participants</Button>
+                    </Box>
                     <Box component="form" onSubmit={onSubmitParticipants}>
                         <Box
                             sx={{
